@@ -1,20 +1,33 @@
 package Database;
 
 import java.sql.*;
+import java.util.Calendar;
 
 public class DatabaseInitialization extends DatabaseConnection{
 	private  Connection dbConnection = null;
 	
-	// Convert the all void to boolean in order to get response of success of failed.
-	// create a seperate method that will initialize the database.
+	// Convert the all void to boolean in order to get 
+	// response of success of failed.
+	// create a method that will initialize the database.
 	public DatabaseInitialization() {
+		super();// For loading the driver.
 		dbConnection = super.getConnection(false);
-		createDatabase();
-		createSupplierTable();
-		createMedicineTable();
-		System.out.println("Database is initialized successfully");
+		boolean database = createDatabase();
+		if(database) {
+			System.out.println("Database is created.");
+		}else {
+			System.out.println("Database is not created.");
+		}
 	}
-	private void createDatabase() {
+	protected boolean InitializeTables() {
+		boolean supplier = createSupplierTable();
+		boolean medicine = createMedicineTable();
+		boolean report = createDailyReportTable();
+		
+		return supplier && medicine && report;		
+	}
+
+	private boolean createDatabase() {
 		try {
 			Statement st = this.dbConnection.createStatement();
 			String sql = "CREATE DATABASE IF NOT EXISTS " + DB;
@@ -22,13 +35,15 @@ public class DatabaseInitialization extends DatabaseConnection{
 			st.executeUpdate(sql);
 			this.dbConnection = super.getConnection(true);
 			System.out.println("Database is created.");
-			
+			return true;
 		} catch (SQLException e) {
 			System.out.println("Unable to create the database." + e.getMessage());
+			
 		}
+		return false;
 	}
 	
-	private void createSupplierTable() {
+	private boolean createSupplierTable() {
 		try {
 			Statement st = this.dbConnection.createStatement();
 			String sql = "CREATE TABLE IF NOT EXISTS "
@@ -43,12 +58,13 @@ public class DatabaseInitialization extends DatabaseConnection{
 							+ ")";
 			st.executeUpdate(sql);
 			System.out.println(SUPPLIER + " table is created.");
-			
+			return true;
 		} catch (SQLException e) {
 			System.out.println("Unable to create the supplier table" + e.getMessage());
 		}
+		return false;
 	}
-	private void createMedicineTable() {
+	private boolean createMedicineTable() {
 		try {
 			Statement st = this.dbConnection.createStatement();
 			String sql = "CREATE TABLE IF NOT EXISTS "
@@ -67,14 +83,52 @@ public class DatabaseInitialization extends DatabaseConnection{
 //			System.out.println(sql);
 			st.executeUpdate(sql);
 			System.out.println(MEDICINES + " table is created.");
-			
+			return true;
 		} catch (SQLException e) {
 			System.out.println("Unable to create the Medicines table" + e.getMessage());
 		}
+		return false;
+	}
+	
+	private boolean createDailyReportTable() {
+		try {
+			Statement st = this.dbConnection.createStatement();
+			
+			String table_name = this.getDailyReportTableName();
+			
+			String sql = "CREATE TABLE IF NOT EXISTS "
+					+ ""+ table_name + " ( "
+					+ "DATE Date, "
+					+ "TIME TIME, "
+					+ "MID INT, "
+					+ "QUANTITY INT, "
+					+ "CONSTRAINT `report_medicines` "
+					+ "FOREIGN KEY (MID) REFERENCES " + MEDICINES + "(MID) "
+					+ "ON DELETE CASCADE "
+					+ "ON UPDATE CASCADE "
+					+ ")";
+			st.executeUpdate(sql);
+			
+			System.out.println("Daily report table is created.");
+			return true;
+		} catch (SQLException e) {
+			System.out.println("Unable to create dailyreport tables" + e.getMessage());
+		}
+		return false;
+	}
+	
+	public static String getDailyReportTableName() {
+		
+		Calendar today = Calendar.getInstance();
+		
+		int month = today.get(Calendar.MONTH);
+		int year = today.get(Calendar.YEAR);
+
+		String name = "DailyReport_" + month + "_"+ year;
+		return name;
 	}
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		new DatabaseInitialization();
 	}
 }
