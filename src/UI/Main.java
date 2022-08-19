@@ -19,3 +19,5 @@ public class Main {
 		new Frame();
 	}
 }
+// garbage collector
+// System.gc() is used to collect the garbage while running applications.

@@ -15,7 +15,7 @@ public class Frame extends JFrame{
 		this.setLayout(new BorderLayout());
 		this.setJMenuBar(new TopMenuBar(this));		
 		
-		AddMedicine md = new AddMedicine(this);
+		AddSupplier md = new AddSupplier(this);
 		this.add(md, BorderLayout.CENTER);
 		currentPanel = md;
 		
