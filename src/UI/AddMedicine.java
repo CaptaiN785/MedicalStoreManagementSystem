@@ -1,13 +1,21 @@
 package UI;
 
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.*;
 
-public class AddMedicine extends JInternalFrame{
-	public AddMedicine(){
-		super("Add medicine", false, true);
+public class AddMedicine extends JPanel{
+	
+	public AddMedicine(Frame parentFrame){
+		super();
+		this.setBackground(Color.RED);
 		this.setVisible(true);
-		this.setPreferredSize(new Dimension(500, 300));
+		
 	}
+	
+	private void initUI() {
+		
+	}
+	
 }
