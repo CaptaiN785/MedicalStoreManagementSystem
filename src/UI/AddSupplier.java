@@ -9,11 +9,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.regex.Pattern;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import Database.DatabaseInitialization;
+import Database.DatabaseOperations;
 public class AddSupplier extends JPanel{
 	
 	JTextField tfName, tfDirector, tfPhone, tfEmail, tfAddress;
@@ -79,7 +82,15 @@ public class AddSupplier extends JPanel{
 		btnAddSupplier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				if(validateForm()) {
-					JOptionPane.showMessageDialog(getRootPane(), "Supplier added");
+					boolean result = new DatabaseOperations().addSupplier(tfName.getText(),
+							tfDirector.getText(), tfAddress.getText(),
+							tfPhone.getText(),tfEmail.getText());
+					clearForm();
+					if(result) {
+						JOptionPane.showMessageDialog(getRootPane(), "Supplier added");
+					}else{
+						JOptionPane.showMessageDialog(getRootPane(), "Supplier added");						
+					}
 				}else {
 					JOptionPane.showMessageDialog(getRootPane(), "Please check your details.");
 				}

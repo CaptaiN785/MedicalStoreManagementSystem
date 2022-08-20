@@ -11,9 +11,12 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import Database.DatabaseOperations;
 
 
 public class AddMedicine extends JPanel{
@@ -21,9 +24,9 @@ public class AddMedicine extends JPanel{
 	JLabel heading;
 	JPanel  headingPanel, formPanel;
 	
-	JTextField tfName, tfQuantity, tfCost;
-	JLabel lbName, lbQuantity, lbCost, lbSid;
-	JComboBox<String> cbSid;
+	JTextField tfName, tfCost;
+	JLabel lbName, lbCost, lbSid;
+	JComboBox<ArrayList<String>> cbSid;
 	
 	JButton checkSupplierDetails, btnAddMedicine, btnClear;
 
@@ -47,20 +50,20 @@ public class AddMedicine extends JPanel{
 		//  working on form for taking input for adding the new medicines
 		
 		lbName = new JLabel("Enter name");
-		lbQuantity = new JLabel("Enter quantity");
 		lbCost = new JLabel("Medicine price");
 		lbSid = new JLabel("Select supplier");
-		styleLb(lbName, lbQuantity, lbCost, lbSid);
+		styleLb(lbName,lbCost, lbSid);
 		
 		tfName = new JTextField(20);
-		tfQuantity = new JTextField("0",20);
 		tfCost = new JTextField("0", 20);
 		
 		// Here need all the supplier list.
-		String supplierList[] = {"Select supplier", "Sharma medicals", 
-				"Medical stores chandigarh", "Dental store"};
-		cbSid = new JComboBox<String>(supplierList);
-		styleTf(tfName, tfQuantity, tfCost);// Styling the text editor field
+		Object[] res = new DatabaseOperations().getSuppliers();
+		ArrayList<String> suppliers = (ArrayList<String>)res[0];
+		ArrayList<Integer> supplier_index = (ArrayList<Integer>)res[1];
+		
+		cbSid = new JComboBox(suppliers.toArray());
+		styleTf(tfName, tfCost);// Styling the text editor field
 		
 		formPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -69,8 +72,6 @@ public class AddMedicine extends JPanel{
 		
 		c.gridx = 0; c.gridy = 0; formPanel.add(lbName, c);
 		c.gridx = 1; c.gridy = 0; formPanel.add(tfName, c);
-		c.gridx = 0; c.gridy = 1; formPanel.add(lbQuantity, c);
-		c.gridx = 1; c.gridy = 1; formPanel.add(tfQuantity, c);
 		c.gridx = 0; c.gridy = 2; formPanel.add(lbCost, c);
 		c.gridx = 1; c.gridy = 2; formPanel.add(tfCost, c);
 		c.gridx = 0; c.gridy = 3; formPanel.add(lbSid, c);
@@ -88,7 +89,16 @@ public class AddMedicine extends JPanel{
 		btnAddMedicine.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				if(validateForm()) {
-					JOptionPane.showMessageDialog(getRootPane(), "Adding medicine");					
+					
+					boolean result = new DatabaseOperations().addMedicine(tfName.getText(),
+							Integer.parseInt(tfCost.getText()), supplier_index.get(cbSid.getSelectedIndex()));
+					
+					if(result) {
+						clearForm();
+						JOptionPane.showMessageDialog(getRootPane(), "Adding medicine");					
+					}else {
+						JOptionPane.showMessageDialog(getRootPane(), "Database error! Medicine not registered.");											
+					}
 				}else {
 					JOptionPane.showMessageDialog(getRootPane(), "Please check the details");
 				}
@@ -102,7 +112,7 @@ public class AddMedicine extends JPanel{
 		btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				clear();
+				clearForm();
 			}
 		});
 		
@@ -137,16 +147,14 @@ public class AddMedicine extends JPanel{
 			label.setFont(new Font("cambria", Font.PLAIN, 16));
 		}
 	}
-	private void clear() {
+	private void clearForm() {
 		tfName.setText("");
-		tfQuantity.setText("0");
 		tfCost.setText("0");
 		cbSid.setSelectedIndex(0);
 	}
 	private boolean validateForm() {
 		// sometime in medicine name there is integers too and hyphen(-)
 		return Pattern.matches("[a-zA-z0-9\s-]+", tfName.getText()) && 
-				Pattern.matches("[0-9]+", tfQuantity.getText()) &&
 				Pattern.matches("[0-9]+", tfCost.getText()) && 
 				(cbSid.getSelectedIndex() != 0);
 	}

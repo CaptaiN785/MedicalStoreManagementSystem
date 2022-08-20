@@ -1,13 +1,16 @@
 package Database;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class DatabaseOperations extends DatabaseConnection{
 	
 	public DatabaseOperations() {
 		super();
 	}
 	
-	boolean addSupplier(String name, String director, 
+	public boolean addSupplier(String name, String director, 
 			String address, String phone, String email) {
 		
 		/*
@@ -47,7 +50,7 @@ public class DatabaseOperations extends DatabaseConnection{
 	}
 
 	
-	boolean updateSupplier(String name, String director, 
+	public boolean updateSupplier(String name, String director, 
 			String address, String phone, String email, int sid) {
 		String updateSql = "UPDATE SUPPLIER SET "
 				+ "NAME = '" + name + "',"
@@ -69,7 +72,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	
-	boolean addMedicine(String name, int cost, int sid) {
+	public boolean addMedicine(String name, int cost, int sid) {
 		/*
 		+----------+--------------+------+-----+---------+----------------+
 		| Field    | Type         | Null | Key | Default | Extra          |
@@ -105,7 +108,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	
-	boolean updateMedicine(String name, int cost, int sid,int quantity, int mid) {
+	public boolean updateMedicine(String name, int cost, int sid,int quantity, int mid) {
 		String updateSql = "UPDATE MEDICINES SET "
 				+ "NAME = '" + name + "',"
 				+ "QUANTITY = " + quantity + ", "
@@ -135,7 +138,7 @@ public class DatabaseOperations extends DatabaseConnection{
 +----------+---------+------+-----+---------+-------+
  */
 	
-	boolean addMoreMedicines(int quantity, int mid) {
+	public boolean addMoreMedicines(int quantity, int mid) {
 		String table_name = DatabaseInitialization.getDailyReportTableName();
 
 		String sql = "INSERT INTO " + table_name + " VALUES( "
@@ -160,7 +163,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	
-	boolean deleteSupplier(int sid) {
+	public boolean deleteSupplier(int sid) {
 		
 		String sql = "DELETE FROM " + SUPPLIER + " WHERE SID = " + sid;
 		try {
@@ -175,7 +178,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	
-	boolean deleteMedicine(int mid) {
+	public boolean deleteMedicine(int mid) {
 		String sql = "DELETE FROM "+ MEDICINES +"  WHERE MID = " + mid;
 		try {
 			Statement st = this.getConnection(true).createStatement();
@@ -187,10 +190,37 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return false;
 	}
-
-	public static void main(String[] args) {
-		boolean res = new DatabaseOperations().deleteSupplier(1);
-				System.out.println(res);
-	}
 	
+	public Object[] getSuppliers() {
+		String sql = "SELECT * FROM " + SUPPLIER;
+		
+		ArrayList<String> suppliers = new ArrayList<>();
+		ArrayList<Integer> supplier_index = new ArrayList<>();
+		
+		// it will show to select the supplier in combo box
+		suppliers.add("Select supplier");
+		supplier_index.add(0);
+		
+		try {
+			Statement st = this.getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+//			result.l/
+			while(result.next()) {
+				suppliers.add(result.getString("NAME"));
+				supplier_index.add(result.getInt("SID"));
+			}
+			return new Object[] {suppliers, supplier_index};
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return new Object[] {};
+	}
+		
+	public static void main(String[] args) {
+		ArrayList<String> s;
+		ArrayList<Integer> i;
+		Object[] res = new DatabaseOperations().getSuppliers();
+		s = (ArrayList<String>)res[0];
+	}
+
 }
