@@ -190,6 +190,26 @@ public class DatabaseOperations extends DatabaseConnection{
 		return obj;
 	}
 	
+	public boolean saveMedicineList(String filePath) {
+		String sql = "(select 'MedicineID', 'Medicine name','Quantity', 'supplier name',"
+				+ " 'supplier phone', 'supplier email') UNION "
+				+ " (select m.mid, m.name, m.quantity, s.name,"
+				+ " s.phone, s.email from medicines m, supplier s where s.sid = m.sid )"
+				+ " INTO OUTFILE '"+filePath+"' FIELDS ENCLOSED BY '\"' "
+				+ " terminated by ',' escaped by '\"' lines terminated by '\\r\\n'";
+		
+		System.out.println(sql);
+		try {
+		
+			Statement st = getConnection(true).createStatement();
+			st.executeQuery(sql);
+			return true;
+		}catch(Exception e) {
+			System.out.println("unable to save the file." + e.getMessage());
+		}
+		return false;
+	}
+	
 	public boolean addMoreMedicines(int quantity, int mid) {
 		String table_name = DatabaseInitialization.getDailyReportTableName();
 
@@ -355,13 +375,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	public static void main(String[] args) {
-		String result[] = new DatabaseOperations().getSupplierDetails(10);
-		if(result.length == 0) {
-			System.out.println("Not found");
-		}
-		for(String res : result) {
-			System.out.println(res);
-		}
+		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
 	}
 
 }

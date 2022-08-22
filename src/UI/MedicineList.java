@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -99,7 +100,20 @@ public class MedicineList extends JPanel {
         this.add(new JPanel().add(btnSave), BorderLayout.SOUTH);
         btnSave.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent ae) {
-        		System.out.println("yes");
+        		JFileChooser fileChooser = new JFileChooser();
+        		fileChooser.setDialogTitle("Save medicine list");
+        		
+        		int fileSelected = fileChooser.showSaveDialog(null);
+        		if(fileSelected == JFileChooser.APPROVE_OPTION) {
+        			File fileToSave = fileChooser.getSelectedFile();
+        			String filePath = fileToSave.getAbsolutePath();
+        			boolean res = new DatabaseOperations().saveMedicineList(filePath);
+        			if(res) {
+        				JOptionPane.showMessageDialog(getRootPane(), "File saved succesfully");
+        			}else {
+        				JOptionPane.showMessageDialog(getRootPane(), "Unable to save the file");
+        			}
+        		}
         	}
         });
         
