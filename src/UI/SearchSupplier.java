@@ -3,38 +3,119 @@ package UI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
-public class SearchSupplier extends JPanel{
+import Database.DatabaseOperations;
+
+public class SearchSupplier extends JPanel implements ActionListener{
 	JLabel lbHeading;
-	JPanel headingPanel, infoPanel;
+	JPanel headingPanel, infoPanel = null;
 	
 	JLabel lbSid, lbName, lbDirector, lbPhone, lbEmail, lbAddress, lbRegDate;
 	JTextField tfSid, tfName, tfDirector, tfPhone, tfEmail, tfAddress, tfRegDate;
 	
-	JButton btnEdit, btnClear, btnDelete;
+	JButton btnEdit, btnClear, btnDelete, btnCancel;
 	
-	public SearchSupplier(Frame parentFrame) {
+	JPanel searchPanel;
+	JComboBox<ArrayList<String>> cbSupplier;
+	JButton btnSearch;
+	JLabel lbSearch;
+	Frame parentFrame = null;
+	
+	ArrayList<String> suppliers = null;
+	ArrayList<Integer> supplier_index = null;
+	
+	String [] info = null;
+	
+	public SearchSupplier(Frame parentFrame, boolean isSearchable, int sid) {
 		// Panel settings
+		this.parentFrame = parentFrame;
 		this.setLayout(new BorderLayout());
 		this.setVisible(true);
 		
 		// Heading panel
-		headingPanel = new JPanel();
-		lbHeading = new JLabel("Search suppliers");
-		lbHeading.setFont(new Font("cambria", Font.BOLD, 30));
-		headingPanel.add(lbHeading);
-		this.add(headingPanel, BorderLayout.NORTH);
 		
-		searchSid(0, parentFrame);
+		initUI(parentFrame, this, isSearchable);
+		
+		if(isSearchable) {
+			headingPanel = new JPanel();
+			lbHeading = new JLabel("Search suppliers");
+			lbHeading.setFont(new Font("cambria", Font.BOLD, 30));
+			headingPanel.add(lbHeading);
+
+			searchPanel = new JPanel();
+			searchPanel.setBorder(new EmptyBorder(new Insets(20, 20, 20, 20)));
+			
+			lbSearch = new JLabel("Search supplier");
+			styleLb(lbSearch);
+			
+			// Here need all the supplier list.
+			Object[] res = new DatabaseOperations().getSuppliers();
+			this.suppliers = (ArrayList<String>)res[0];
+			this.supplier_index = (ArrayList<Integer>)res[1];
+			
+			cbSupplier = new JComboBox(suppliers.toArray());
+			cbSupplier.setFont(new Font("cambria", Font.PLAIN, 16));
+			cbSupplier.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10)));
+			
+			btnSearch = new JButton("Search");
+			btnSearch.setFont(new Font("cambria", Font.PLAIN, 16));
+			btnSearch.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10)));
+			btnSearch.addActionListener(this);
+			
+			searchPanel.add(lbSearch);
+			searchPanel.add(cbSupplier);
+			searchPanel.add(btnSearch);
+			
+			Box verticalLayout = Box.createVerticalBox();
+			verticalLayout.add(headingPanel);
+			verticalLayout.add(searchPanel);
+			this.add(verticalLayout, BorderLayout.NORTH);
+			
+		}else {
+			this.info = new DatabaseOperations().getSupplierDetails(sid);
+			if(info.length == 0) {
+				JOptionPane.showMessageDialog(getRootPane(), "Supplier not found");
+			}else {
+				setInformation(info);
+				infoPanel.setVisible(true);
+			}
+		}
 	}
-	public void searchSid(int sid, Frame parentFrame) {
+	// Implementing the methods for global actionListener
+	public void actionPerformed(ActionEvent ae) {
+		if(ae.getSource() == btnSearch) {
+			int index = cbSupplier.getSelectedIndex();
+			if(index == 0) {
+				JOptionPane.showMessageDialog(getRootPane(), "Please select a supplier.");
+			}else {
+				int sid = this.supplier_index.get(index);
+				this.info = new DatabaseOperations().getSupplierDetails(sid);
+				if(info.length == 0) {
+					JOptionPane.showMessageDialog(getRootPane(), "Supplier not found");
+					return;
+				}
+				setInformation(info);
+				infoPanel.setVisible(true);
+				this.validate();
+				this.revalidate();
+				parentFrame.refreshDisplay();
+			}
+		}
+	}
+	
+	public void initUI(Frame parentFrame, SearchSupplier parentPanel, boolean isSearchable) {	
 		
 		// working on infoPanel Label
 		lbSid = new JLabel("Supplier ID: ");
@@ -89,10 +170,21 @@ public class SearchSupplier extends JPanel{
 		btnEdit.setFont(new Font("cambria", Font.PLAIN, 16));
 		btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
+		btnCancel = new JButton("Cancel");
+		btnCancel.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10)));
+		btnCancel.setFont(new Font("cambria", Font.PLAIN, 16));
+		btnCancel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		
+		
 		btnClear = new JButton("Clear");
 		btnClear.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10)));
 		btnClear.setFont(new Font("cambria", Font.PLAIN, 16));
 		btnClear.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		btnClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				clearFields();
+			}
+		});
 		
 		btnDelete = new JButton("Delete Supplier");
 		btnDelete.setForeground(Color.WHITE);
@@ -104,36 +196,73 @@ public class SearchSupplier extends JPanel{
 			public void actionPerformed(ActionEvent ae) {
 				int response = JOptionPane.showConfirmDialog(getRootPane(), "Are you sure?");
 				if(response == JOptionPane.YES_OPTION) {
-					System.out.println("Deleteing supplier");
+					boolean isDeleted = new DatabaseOperations().deleteSupplier(Integer.parseInt(tfSid.getText()));
+					if(isDeleted) {
+						JOptionPane.showMessageDialog(getRootPane(), "Supplier deleted succesfully");
+						parentPanel.remove(infoPanel);
+						parentPanel.validate();
+						parentPanel.revalidate();
+					}else {
+						JOptionPane.showMessageDialog(getRootPane(), "Database error!");
+					}
 				}else {
-					System.out.println("Not deleting the supplier");
+					System.out.println("delete cancel");
 				}
 			}
 		});
 		
 		Box btnLayout = Box.createHorizontalBox();
-		btnLayout.add(btnEdit);
-		c.gridx = 1; c.gridy = 9; infoPanel.add(btnLayout, c);
-		c.gridx = 1; c.gridy = 10; infoPanel.add(Box.createVerticalBox().add(btnDelete), c);
-		
+		if(isSearchable) {
+			btnLayout.add(btnEdit);
+			c.gridx = 1; c.gridy = 9; infoPanel.add(btnLayout, c);
+			c.gridx = 1; c.gridy = 10; infoPanel.add(Box.createVerticalBox().add(btnDelete), c);
+			
+		}
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				String command = ae.getActionCommand();
 				if(command.equals("Edit")) {
-					System.out.println("Edit");
+					enableField();
 					btnEdit.setText("Update");
+					btnLayout.add(btnCancel);
+					btnLayout.add(Box.createHorizontalStrut(30));
 					btnLayout.add(btnClear);
 				}else {
-					System.out.println("Updating");
-					btnLayout.remove(btnClear);
-					btnEdit.setText("Edit");
+					if(validateForm()) {
+						int res = JOptionPane.showConfirmDialog(getRootPane(), "Are you sure?");
+						if(res == JOptionPane.YES_OPTION) {
+							boolean isUpdated = new DatabaseOperations().updateSupplier(tfName.getText(),
+									tfDirector.getText(), tfAddress.getText(), 
+									tfPhone.getText() , tfEmail.getText() , Integer.parseInt(tfSid.getText()));
+							if(isUpdated) {
+								btnLayout.remove(btnClear);
+								btnLayout.remove(btnCancel);
+								btnEdit.setText("Edit");
+								disableField();
+								JOptionPane.showMessageDialog(getRootPane(), "Supplier updated.");
+							}else {
+								JOptionPane.showMessageDialog(getRootPane(), "Database error.");
+							}
+						}
+					}else {
+						JOptionPane.showMessageDialog(getRootPane(), "Please check your details.");
+					}
 				}
 				parentFrame.refreshDisplay();// Refresh the display
 				// after doing all tasks.
 			}
 		});
+		btnCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae){
+				setInformation(info);
+				btnLayout.remove(btnClear);
+				btnLayout.remove(btnCancel);
+				btnEdit.setText("Edit");
+				disableField();
+			}
+		});
+		infoPanel.setVisible(false);
 	}
-	
 	private void styleTf(JTextField ...fields) {
 		for(JTextField field : fields) {
 			field.setFont(new Font("cambria", Font.PLAIN, 16));
@@ -144,20 +273,48 @@ public class SearchSupplier extends JPanel{
 			label.setFont(new Font("cambria", Font.PLAIN, 16));
 		}
 	}
-	private void enableField() {
-		tfName.setEnabled(true);
-		tfDirector.setEnabled(true);
-		tfPhone.setEnabled(true);
-		tfEmail.setEnabled(true);
-		tfAddress.setEnabled(true);
+	private void setInformation(String[] info) {
+		// Providing the values to each fields
+		tfSid.setText(info[0]);
+		tfName.setText(info[1]);
+		tfDirector.setText(info[2]);
+		tfPhone.setText(info[3]);
+		tfEmail.setText(info[4]);
+		tfRegDate.setText(info[6]);
+		tfAddress.setText(info[5]);
 	}
+	
+	private void enableField() {
+		tfName.setEditable(true);
+		tfDirector.setEditable(true);
+		tfPhone.setEditable(true);
+		tfEmail.setEditable(true);
+		tfAddress.setEditable(true);
+	}
+	
 	private void disableField() {
-		tfSid.setEnabled(false);
-		tfName.setEnabled(false);
-		tfDirector.setEnabled(false);
-		tfPhone.setEnabled(false);
-		tfEmail.setEnabled(false);
-		tfRegDate.setEnabled(false);
-		tfAddress.setEnabled(false);
+		tfSid.setEditable(false);
+		tfName.setEditable(false);
+		tfDirector.setEditable(false);
+		tfPhone.setEditable(false);
+		tfEmail.setEditable(false);
+		tfRegDate.setEditable(false);
+		tfAddress.setEditable(false);
+	}
+	private void clearFields() {
+		tfName.setText("");
+		tfDirector.setText("");
+		tfPhone.setText("");
+		tfEmail.setText("");
+		tfAddress.setText("");
+	}
+	private boolean validateForm() {
+		String emailPattern = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$";
+		return Pattern.matches("[a-zA-z0-9\s-]+", tfName.getText()) &&
+				Pattern.matches("[a-zA-Z\s]+", tfDirector.getText()) &&
+				Pattern.matches("[0-9]+", tfPhone.getText()) && 
+				(tfPhone.getText().length() == 10) && 
+				Pattern.matches(emailPattern, tfEmail.getText()) &&
+				Pattern.matches("[a-zA-Z0-9\s,-]+", tfAddress.getText());
 	}
 }

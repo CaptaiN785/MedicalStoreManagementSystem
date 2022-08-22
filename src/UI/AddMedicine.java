@@ -15,11 +15,12 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import Database.DatabaseOperations;
 
 
-public class AddMedicine extends JPanel{
+public class AddMedicine extends JPanel implements ActionListener{
 	
 	JLabel heading;
 	JPanel  headingPanel, formPanel;
@@ -29,12 +30,19 @@ public class AddMedicine extends JPanel{
 	JComboBox<ArrayList<String>> cbSid;
 	
 	JButton checkSupplierDetails, btnAddMedicine, btnClear;
-
+	Frame parentFrame;
+	
+	JButton btnHide;
+	
+	ArrayList<Integer> supplier_index;
+	ArrayList<String> suppliers;
+	
+	Box rightLayout;
+	Box verticalLayout;
 	public AddMedicine(Frame parentFrame){
 		super();
-//		this.setBackground(Color.RED);
 		this.setVisible(true);
-		
+		this.parentFrame = parentFrame;
 		initUI();
 	}
 
@@ -59,8 +67,8 @@ public class AddMedicine extends JPanel{
 		
 		// Here need all the supplier list.
 		Object[] res = new DatabaseOperations().getSuppliers();
-		ArrayList<String> suppliers = (ArrayList<String>)res[0];
-		ArrayList<Integer> supplier_index = (ArrayList<Integer>)res[1];
+		this.suppliers = (ArrayList<String>)res[0];
+		this.supplier_index = (ArrayList<Integer>)res[1];
 		
 		cbSid = new JComboBox(suppliers.toArray());
 		styleTf(tfName, tfCost);// Styling the text editor field
@@ -135,6 +143,59 @@ public class AddMedicine extends JPanel{
 		checkSupplierDetails.setMaximumSize(new Dimension(40,40));
 		checkSupplierDetails.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		c.gridx = 2; c.gridy = 3; formPanel.add(checkSupplierDetails, c);
+		checkSupplierDetails.addActionListener(this);
+		
+		
+		// this button will hide the supplier details
+		btnHide = new JButton("Hide");
+		btnHide.setBorder(new EmptyBorder(new Insets(5, 10, 5, 10)));
+		btnHide.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		btnHide.addActionListener(this);
+		
+	}
+	public void actionPerformed(ActionEvent ae) {
+		if(ae.getSource() == checkSupplierDetails) {
+			int index = cbSid.getSelectedIndex();
+			if(index == 0) {
+				JOptionPane.showMessageDialog(getRootPane(), "Please select a supplier.");
+			}else {
+				// Checking if any thing is getting displayed.
+				if(rightLayout != null && verticalLayout != null) {
+					rightLayout.removeAll();
+					rightLayout.validate();
+					rightLayout.revalidate();
+					verticalLayout.removeAll();
+					verticalLayout.validate();
+					verticalLayout.revalidate();
+				}
+				
+				JLabel lbHeading = new JLabel("Supplier details");
+				lbHeading.setFont(new Font("cambria", Font.PLAIN, 25));
+				
+				rightLayout = Box.createHorizontalBox();
+				verticalLayout = Box.createVerticalBox();
+				verticalLayout.add(lbHeading);
+				verticalLayout.add(new SearchSupplier(parentFrame, false, this.supplier_index.get(index)));
+				verticalLayout.add(btnHide);
+				verticalLayout.setBorder(new LineBorder(Color.GRAY, 2, true));
+				rightLayout.add(verticalLayout);
+				rightLayout.add(Box.createHorizontalStrut(40));
+				
+				this.add(rightLayout, BorderLayout.EAST);
+				this.validate();
+				this.revalidate();
+				parentFrame.refreshDisplay();
+			}
+		}
+		if(ae.getSource() == btnHide) {
+			this.remove(rightLayout);
+			rightLayout = null;
+			verticalLayout = null;
+			System.gc();
+			this.validate();
+			this.revalidate();
+			parentFrame.refreshDisplay();
+		}
 	}
 	
 	private void styleTf(JTextField ...fields) {

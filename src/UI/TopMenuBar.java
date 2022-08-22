@@ -11,7 +11,7 @@ import javax.swing.*;
 public class TopMenuBar extends JMenuBar {
 	
 	JMenu medicine, supplier, report;
-	JMenuItem addMedicine, updateMedicine, deleteMedicine, searchMedicine;
+	JMenuItem addMedicine, medicineList, deleteMedicine, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
 	
 	public TopMenuBar(Frame parentFrame) {
@@ -27,32 +27,33 @@ public class TopMenuBar extends JMenuBar {
 			}
 		});
 		
-		updateMedicine = new JMenuItem("Update medicine");
-		updateMedicine.addActionListener(new ActionListener() {
+		medicineList = new JMenuItem("Medicine list");
+		medicineList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new UpdateMedicine(parentFrame));
+				addAnotherPanel(parentFrame, new MedicineList(parentFrame, false, null));
 			}
 		});
-		searchMedicine = new JMenuItem("Search medicine");
+		searchMedicine = new JMenuItem("View medicine");
 		searchMedicine.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new UpdateMedicine(parentFrame));
+				addAnotherPanel(parentFrame, new SearchMedicine(parentFrame, true, 4));
 			}
 		});
 		
-		deleteMedicine = new JMenuItem("Delete medicine");
-		deleteMedicine.setForeground(Color.RED);
-		deleteMedicine.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
-			}
-		});
+//		deleteMedicine = new JMenuItem("Delete medicine");
+//		deleteMedicine.setForeground(Color.RED);
+//		deleteMedicine.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
+//			}
+//		});
 		
 		medicine.add(addMedicine);
-		medicine.add(updateMedicine);
-		medicine.add(searchMedicine);
 		medicine.addSeparator();
-		medicine.add(deleteMedicine);
+		medicine.add(medicineList);
+		medicine.addSeparator();
+		medicine.add(searchMedicine);
+//		medicine.add(deleteMedicine);
 		
 		// Working with supplier menu
 		supplier = new JMenu("Supplier");
@@ -66,32 +67,32 @@ public class TopMenuBar extends JMenuBar {
 			}
 		});
 		
-		updateSupplier = new JMenuItem("Update supplier");
-		updateSupplier.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new UpdateSupplier(parentFrame));
-			}
-		});
-		
-		searchSupplier = new JMenuItem("Search supplier");
+//		updateSupplier = new JMenuItem("Update supplier");
+//		updateSupplier.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				addAnotherPanel(parentFrame, new UpdateSupplier(parentFrame));
+//			}
+//		});
+//		
+		searchSupplier = new JMenuItem("View supplier");
 		searchSupplier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new SearchSupplier(parentFrame));
+				addAnotherPanel(parentFrame, new SearchSupplier(parentFrame, true, 0));
 			}
 		});
-		deleteSupplier = new JMenuItem("Delete Supplier");
-		deleteSupplier.setForeground(Color.RED);
-		deleteSupplier.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
-			}
-		});
+//		deleteSupplier = new JMenuItem("Delete Supplier");
+//		deleteSupplier.setForeground(Color.RED);
+//		deleteSupplier.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
+//			}
+//		});
 		
 		supplier.add(addSupplier);
-		supplier.add(updateSupplier);
-		supplier.add(searchSupplier);
+//		supplier.add(updateSupplier);
 		supplier.addSeparator();
-		supplier.add(deleteSupplier);
+		supplier.add(searchSupplier);
+//		supplier.add(deleteSupplier);
 		
 		// Final addition of menu to the menubar
 		this.add(medicine);

@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import jdk.jshell.StatementSnippet;
+
 public class DatabaseOperations extends DatabaseConnection{
 	
 	public DatabaseOperations() {
@@ -138,6 +140,56 @@ public class DatabaseOperations extends DatabaseConnection{
 +----------+---------+------+-----+---------+-------+
  */
 	
+	public Object[][] getMedicineList(int sid){
+		
+		// if sid = -1 then return all medicine list else return 
+		// medicine of sid given.
+		
+		// firstly find the no of medicines in the database
+		String sql = "SELECT COUNT(*) AS TOTAL FROM " + MEDICINES;
+		
+		if(sid != -1) {
+			sql += " WHERE SID = " + sid;
+		}
+		
+		Object[][] medicineList;
+		
+		try {
+			
+			Connection conn = getConnection(true);
+			Statement st = conn.createStatement();
+			
+			ResultSet result = st.executeQuery(sql);
+			if(result.next()) {
+				int rows = Integer.parseInt(result.getString(1));
+				medicineList = new Object[rows][4];
+				
+				sql = "SELECT MID, NAME, QUANTITY, SID FROM " + MEDICINES;
+				
+				if(sid != -1) {
+					sql += " WHERE SID = " + sid;
+				}
+				
+				sql += " ORDER BY QUANTITY";
+				
+				result = st.executeQuery(sql);
+				int r = 0;
+				while(result.next()) {
+					medicineList[r][0] = result.getString(1);
+					medicineList[r][1] = result.getString(2);
+					medicineList[r][2] = result.getString(3);
+					medicineList[r][3] = result.getString(4);
+					r++;
+				}
+				return medicineList;
+			}
+		}catch(Exception e) {
+			System.out.println("Unable to fetch the data" + e.getMessage());
+		}
+		Object[][] obj = new Object[0][0];
+		return obj;
+	}
+	
 	public boolean addMoreMedicines(int quantity, int mid) {
 		String table_name = DatabaseInitialization.getDailyReportTableName();
 
@@ -216,11 +268,100 @@ public class DatabaseOperations extends DatabaseConnection{
 		return new Object[] {};
 	}
 		
+	public String[] getSupplierDetails(int sid) {
+		
+		String sql = "SELECT * FROM " + SUPPLIER + " WHERE SID = " + sid;
+		String info[] = new String[7];
+		try {
+			Statement st = getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			if(result.next()) {
+				info[0] = String.valueOf(result.getInt("SID"));
+				info[1] = result.getString("NAME");
+				info[2] = result.getString("DIRECTOR");
+				info[3] = result.getString("PHONE");
+				info[4] = result.getString("EMAIL");
+				info[6] = result.getString("REGDATE");
+				info[5] = result.getString("ADDRESS");
+				return info;
+			}
+		}catch(SQLException e) {
+			System.out.println("Database error." + e.getMessage());
+		}
+		return new String[] {};
+	}	
+	
+	public Object[] getMedicines() {
+		String sql = "SELECT * FROM " + MEDICINES;
+		
+		ArrayList<String> medicines = new ArrayList<>();
+		ArrayList<Integer> medicine_index = new ArrayList<>();
+		
+		// it will show to select the medicine in combo box
+		medicines.add("Select medicine");
+		medicine_index.add(0);
+		
+		try {
+			Statement st = this.getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			
+			while(result.next()) {
+				medicines.add(result.getString("NAME"));
+				medicine_index.add(result.getInt("MID"));
+			}
+			return new Object[] {medicines, medicine_index};
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return new Object[] {};
+	}
+
+	public String[] getMedicineDetails(int mid) {
+		String sql = "SELECT * FROM " + MEDICINES + " WHERE MID = " + mid;
+		String info[] = new String[6];
+		try {
+			Statement st = getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			if(result.next()) {
+				info[0] = String.valueOf(result.getInt("MID"));
+				info[1] = result.getString("NAME");
+				info[2] = result.getString("QUANTITY");
+				info[3] = result.getString("COST");
+				info[4] = result.getString("REGDATE");
+				info[5] = result.getString("SID");
+				// returns mid, name, quantit, cost, regdate, sid
+				return info;
+			}
+		}catch(SQLException e) {
+			System.out.println("Database error." + e.getMessage());
+		}
+		return new String[] {};
+	}
+	
+	public boolean isSupplierPresent(int sid) {
+		
+		String sql = "SELECT * FROM " + SUPPLIER + " WHERE SID = " + sid;
+		
+		try {
+			Statement st = getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			
+			if(result.next()) {
+				return true;
+			}
+		}catch(Exception e) {
+			System.out.println("Database error while checking supplier id");
+		}
+		return false;
+	}
 	public static void main(String[] args) {
-		ArrayList<String> s;
-		ArrayList<Integer> i;
-		Object[] res = new DatabaseOperations().getSuppliers();
-		s = (ArrayList<String>)res[0];
+		String result[] = new DatabaseOperations().getSupplierDetails(10);
+		if(result.length == 0) {
+			System.out.println("Not found");
+		}
+		for(String res : result) {
+			System.out.println(res);
+		}
 	}
 
 }
