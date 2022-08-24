@@ -38,7 +38,8 @@ public class MedicineList extends JPanel {
 			this.data = data;
 		}else {
 			// Here specifically opening this tab.
-			this.data = new DatabaseOperations().getMedicineList(-1);// -1 means all medicine list
+			this.data = new DatabaseOperations().getMedicineList(-1);
+			// -1 means all medicine list
 		}
 		initUI(isReferenced, this.data);
 	}

@@ -11,7 +11,7 @@ import javax.swing.*;
 public class TopMenuBar extends JMenuBar {
 	
 	JMenu medicine, supplier, report;
-	JMenuItem addMedicine, medicineList, deleteMedicine, searchMedicine;
+	JMenuItem addMedicine, medicineList, updateInventory, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
 	
 	public TopMenuBar(Frame parentFrame) {
@@ -40,20 +40,20 @@ public class TopMenuBar extends JMenuBar {
 			}
 		});
 		
-//		deleteMedicine = new JMenuItem("Delete medicine");
-//		deleteMedicine.setForeground(Color.RED);
-//		deleteMedicine.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
-//			}
-//		});
+		updateInventory = new JMenuItem("Update Inventory");
+		updateInventory.setForeground(Color.RED);
+		updateInventory.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new UpdateInventory(parentFrame));
+			}
+		});
 		
 		medicine.add(addMedicine);
 		medicine.addSeparator();
 		medicine.add(medicineList);
 		medicine.addSeparator();
 		medicine.add(searchMedicine);
-//		medicine.add(deleteMedicine);
+		medicine.add(updateInventory);
 		
 		// Working with supplier menu
 		supplier = new JMenu("Supplier");
