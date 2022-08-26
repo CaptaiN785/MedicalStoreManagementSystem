@@ -93,18 +93,22 @@ public class UpdateInventory extends JPanel{
 		jtTable.getTableHeader().setReorderingAllowed(false);
 		
 		// action performed on table
-//		jtTable.setCellSelectionEnabled(true);  
-//	    ListSelectionModel select= jtTable.getSelectionModel();  
-//	    select.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);  
-//	    select.addListSelectionListener(new ListSelectionListener() {
-//	    	public void valueChanged(ListSelectionEvent e) {  
-//	            int[] row = jtTable.getSelectedRows();  
-//	            int[] column = jtTable.getSelectedColumns();  
-//	            
-//	            if(row.length == 1 && column.length == 1) {
-//	            }
-//	    	}}
-//	    );  
+		jtTable.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent me) {
+				if(me.getClickCount() == 2) {// if mouse is double clicked on name
+					int row = jtTable.getSelectedRow();
+					int col = jtTable.getSelectedColumn();
+					if(col == 1) {
+						int r = JOptionPane.showConfirmDialog(getParent(), "Are your sure?");
+						if(r == JOptionPane.YES_OPTION) {
+							String val = (String)jtTable.getValueAt(row, col);
+							tableModel.removeRow(row);
+							JOptionPane.showMessageDialog(getRootPane(), val + " is deleted.");
+						}
+					}
+				}
+			}
+		});
 
 		JScrollPane sp=new JScrollPane(jtTable);
 		this.add(sp, BorderLayout.CENTER);
@@ -114,7 +118,9 @@ public class UpdateInventory extends JPanel{
 			public void actionPerformed(ActionEvent ae) {
 				int index = cbMedicineList.getSelectedIndex();
 				if(!map.containsKey(index)) {
-					tableModel.addRow(medicineList[index]);
+					Object []obj = medicineList[index];
+					obj[2] = 0;
+					tableModel.addRow(obj);
 					map.put(index, 1);
 				}else {
 					JOptionPane.showMessageDialog(getRootPane(), "Medicine already added.");
@@ -123,6 +129,5 @@ public class UpdateInventory extends JPanel{
 		});
 		// right click on table row to delete
 		// make quantity of each object as null
-		// 
 	}
 }
