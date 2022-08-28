@@ -198,7 +198,7 @@ public class DatabaseOperations extends DatabaseConnection{
 				+ " INTO OUTFILE '"+filePath+"' FIELDS ENCLOSED BY '\"' "
 				+ " terminated by ',' escaped by '\"' lines terminated by '\\r\\n'";
 		
-		System.out.println(sql);
+//		System.out.println(sql);
 		try {
 		
 			Statement st = getConnection(true).createStatement();
@@ -263,7 +263,24 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	
-	public Object[] getSuppliers() {
+	public boolean updateInventory(int data[][]) {
+		// data[i][0] => Medicine id
+		// data[i][1] => Quantity
+		try {	
+			Statement st = getConnection(true).createStatement();
+			int totalEntry = data.length;
+			for(int i=0; i<totalEntry; i++) {
+				String sql = "UPDATE " + MEDICINES + " SET QUANTITY = QUANTITY + " + data[i][1] + " WHERE MID = " + data[i][0];
+				st.executeUpdate(sql);
+			}
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Unable to update the inventory" + e.getMessage());
+		}
+		return false;
+	}
+	
+ 	public Object[] getSuppliers() {
 		String sql = "SELECT * FROM " + SUPPLIER;
 		
 		ArrayList<String> suppliers = new ArrayList<>();
@@ -375,7 +392,8 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	public static void main(String[] args) {
-		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
+//		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
+		System.out.println("Everything is ok");
 	}
 
 }

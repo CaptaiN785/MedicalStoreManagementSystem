@@ -108,6 +108,7 @@ public class MedicineList extends JPanel {
         		if(fileSelected == JFileChooser.APPROVE_OPTION) {
         			File fileToSave = fileChooser.getSelectedFile();
         			String filePath = fileToSave.getAbsolutePath();
+        			filePath += ".csv";
         			boolean res = new DatabaseOperations().saveMedicineList(filePath);
         			if(res) {
         				JOptionPane.showMessageDialog(getRootPane(), "File saved succesfully");
