@@ -118,7 +118,6 @@ public class MedicineList extends JPanel {
         		}
         	}
         });
-        
 	}
 	
 	private void displayMedicineInfo(int row, int col) {

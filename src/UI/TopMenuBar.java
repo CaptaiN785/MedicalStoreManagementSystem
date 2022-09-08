@@ -10,16 +10,18 @@ import javax.swing.*;
 
 public class TopMenuBar extends JMenuBar {
 	
-	JMenu medicine, supplier, report;
+	JMenu medicine, supplier, report, service;
 	JMenuItem addMedicine, medicineList, updateInventory, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
+	
+	JMenuItem checkoutMedicine;
 	
 	public TopMenuBar(Frame parentFrame) {
 		// Working with medicine Menu
 		medicine = new JMenu("Medicine");
 		medicine.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
-		// defining the menuitemes for medicine menu
+		// defining the menuItemes for medicine menu
 		addMedicine = new JMenuItem("Add medicine");
 		addMedicine.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -59,7 +61,7 @@ public class TopMenuBar extends JMenuBar {
 		supplier = new JMenu("Supplier");
 		supplier.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
-		// defining the menuitems for suppliers
+		// defining the menuItems for suppliers
 		addSupplier = new JMenuItem("Add supplier.");
 		addSupplier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -94,9 +96,23 @@ public class TopMenuBar extends JMenuBar {
 		supplier.add(searchSupplier);
 //		supplier.add(deleteSupplier);
 		
+		
+		// Service menu Items
+		service = new JMenu("Services");
+		service.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		
+		checkoutMedicine = new JMenuItem("Checkout");
+		service.add(checkoutMedicine);
+		checkoutMedicine.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new SellMedicine(parentFrame));
+			}
+		});
+		
 		// Final addition of menu to the menubar
 		this.add(medicine);
 		this.add(supplier);
+		this.add(service);
 	}
 	public void addAnotherPanel(Frame frame, JPanel panel) {
 		frame.remove(frame.currentPanel);

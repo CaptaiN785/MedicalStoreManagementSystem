@@ -94,7 +94,7 @@ public class DatabaseInitialization extends DatabaseConnection{
 		try {
 			Statement st = this.dbConnection.createStatement();
 			
-			String table_name = this.getDailyReportTableName();
+			String table_name = getDailyReportTableName();
 			
 			String sql = "CREATE TABLE IF NOT EXISTS "
 					+ ""+ table_name + " ( "
@@ -102,7 +102,7 @@ public class DatabaseInitialization extends DatabaseConnection{
 					+ "TIME TIME, "
 					+ "MID INT, "
 					+ "QUANTITY INT, "
-					+ "CONSTRAINT `report_medicines` "
+					+ "CONSTRAINT `report_medicines_" + table_name + "` "
 					+ "FOREIGN KEY (MID) REFERENCES " + MEDICINES + "(MID) "
 					+ "ON DELETE CASCADE "
 					+ "ON UPDATE CASCADE "
@@ -112,7 +112,7 @@ public class DatabaseInitialization extends DatabaseConnection{
 			System.out.println("Daily report table is created.");
 			return true;
 		} catch (SQLException e) {
-			System.out.println("Unable to create dailyreport tables" + e.getMessage());
+			System.out.println("Unable to create dailyreport tables " + e.getMessage());
 		}
 		return false;
 	}

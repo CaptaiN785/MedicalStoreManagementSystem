@@ -267,11 +267,30 @@ public class DatabaseOperations extends DatabaseConnection{
 		// data[i][0] => Medicine id
 		// data[i][1] => Quantity
 		try {	
-			Statement st = getConnection(true).createStatement();
+			Connection conn = getConnection(true);
+			DatabaseMetaData dbm = conn.getMetaData();
+			
+			// Firstly checking the table exists for daily report
+			String table_name = DatabaseInitialization.getDailyReportTableName();
+			ResultSet tables = dbm.getTables(null, null, table_name, null);
+			
+			if(!tables.next()) {
+				new DatabaseInitialization().InitializeTables();
+			}
+			
+			Statement st = conn.createStatement();
 			int totalEntry = data.length;
 			for(int i=0; i<totalEntry; i++) {
+				
+				String sql_report = "INSERT INTO " + table_name + " VALUES( "
+						+ "CURRENT_DATE(),CURRENT_TIME(),"
+						+ "" + data[i][0] + ","
+						+ "" + data[i][1] + ")";
+				
+				st.executeUpdate(sql_report);
+				
 				String sql = "UPDATE " + MEDICINES + " SET QUANTITY = QUANTITY + " + data[i][1] + " WHERE MID = " + data[i][0];
-				st.executeUpdate(sql);
+				st.executeUpdate(sql);	
 			}
 			return true;
 		}catch(SQLException e) {
@@ -304,7 +323,6 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return new Object[] {};
 	}
-		
 	public String[] getSupplierDetails(int sid) {
 		
 		String sql = "SELECT * FROM " + SUPPLIER + " WHERE SID = " + sid;
@@ -374,15 +392,11 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return new String[] {};
 	}
-	
 	public boolean isSupplierPresent(int sid) {
-		
 		String sql = "SELECT * FROM " + SUPPLIER + " WHERE SID = " + sid;
-		
 		try {
 			Statement st = getConnection(true).createStatement();
 			ResultSet result = st.executeQuery(sql);
-			
 			if(result.next()) {
 				return true;
 			}
@@ -395,5 +409,4 @@ public class DatabaseOperations extends DatabaseConnection{
 //		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
 		System.out.println("Everything is ok");
 	}
-
 }

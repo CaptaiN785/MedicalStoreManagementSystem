@@ -30,9 +30,7 @@ public class UpdateInventory extends JPanel{
 	String [] medicineNames;
 	HashMap<Integer, Integer> map; // it will map which medicine is present which not.
 	
-	
 	JButton btnUpdateInventory, btnRemoveAll, btnClearAll;
-	
 	
 	// All element for suppliers display
 	Box supplierLayout;
@@ -104,7 +102,7 @@ public class UpdateInventory extends JPanel{
 		// action performed on table
 		jtTable.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent me) {
-				if(me.getClickCount() == 2) {// if mouse is double clicked on name
+				if(me.getClickCount() == 2) {// if mouse is double clicked
 					int row = jtTable.getSelectedRow();
 					int col = jtTable.getSelectedColumn();
 					if(col == 1) { // if name is clicked
@@ -169,8 +167,14 @@ public class UpdateInventory extends JPanel{
 				int res = JOptionPane.showConfirmDialog(getRootPane(), "Are your sure?");
 				if(res == JOptionPane.YES_OPTION) {
 					int totalEntries = tableModel.getRowCount();
-					int data[][] = new int[totalEntries][2];
 					
+					// checking if no entries is present
+					if(totalEntries == 0) {
+						JOptionPane.showMessageDialog(getRootPane(), "No medicine to update.");
+						return;
+					}
+					
+					int data[][] = new int[totalEntries][2];
 					for(int i=0; i<totalEntries; i++) {
 						data[i][0] = Integer.parseInt((String)tableModel.getValueAt(i, 0));
 						String quant = tableModel.getValueAt(i, 2).toString();
