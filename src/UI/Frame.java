@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Stack;
 
+import UI.*;
+
 @SuppressWarnings("serial")
 public class Frame extends JFrame{
 	
@@ -18,7 +20,6 @@ public class Frame extends JFrame{
 		AddSupplier md = new AddSupplier(this);
 		this.add(md, BorderLayout.CENTER);
 		currentPanel = md;
-		
 		
 		// This is a frame settings.
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

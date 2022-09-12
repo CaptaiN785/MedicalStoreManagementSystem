@@ -14,7 +14,7 @@ public class TopMenuBar extends JMenuBar {
 	JMenuItem addMedicine, medicineList, updateInventory, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
 	
-	JMenuItem checkoutMedicine;
+	JMenuItem checkoutMedicine, monthlyBuyingReport, monthlySoldReport;
 	
 	public TopMenuBar(Frame parentFrame) {
 		// Working with medicine Menu
@@ -108,6 +108,15 @@ public class TopMenuBar extends JMenuBar {
 				addAnotherPanel(parentFrame, new SellMedicine(parentFrame));
 			}
 		});
+		monthlyBuyingReport = new JMenuItem("Monthly buying report");
+		service.addSeparator();
+		service.add(monthlyBuyingReport);
+		monthlyBuyingReport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new MonthlyBuyingReport(parentFrame));
+			}
+		});
+		
 		
 		// Final addition of menu to the menubar
 		this.add(medicine);

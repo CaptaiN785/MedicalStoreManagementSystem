@@ -1,12 +1,10 @@
 package UI;
 
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
-import com.formdev.flatlaf.FlatLightLaf;
-
+//import com.formdev.flatlaf.FlatDarkLaf;
+//import com.formdev.flatlaf.FlatIntelliJLaf;
+//import com.formdev.flatlaf.FlatLightLaf;
 public class Main {
 	public static void main(String[] args) {
 		try {
@@ -20,6 +18,7 @@ public class Main {
 //			FlatLightLaf.setup();
 //			UIManager.setLookAndFeel(new FlatLightLaf());
 		} catch (Exception e) {
+			System.out.println("Error while setting look and feel theme");
 			e.printStackTrace();
 		}
 		new Frame();

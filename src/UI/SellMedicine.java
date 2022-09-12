@@ -25,12 +25,12 @@ import java.util.regex.Pattern;
 
 public class SellMedicine extends JPanel{
 	
-	JTextField tfCustomerName, tfQuantity;
+	JTextField tfCustomerName, tfQuantity,tfCustomerPhone;
 	JComboBox cbMedicineList;
 	
 	JPanel formPanel, headingPanel, inputPanel, bottomPanel;
 	JButton btnCheckout, btnAddMedicine, btnClearAll, btnHideMedicine;
-	JLabel lbHeading, lbCustomerName, lbQuantity, lbMedicineList;
+	JLabel lbHeading, lbCustomerName, lbCustomerPhone, lbQuantity, lbMedicineList;
 	Frame parentFrame;
 	
 	JTable jtTable;
@@ -61,15 +61,17 @@ public class SellMedicine extends JPanel{
 		// Form panel
 		// Labels
 		lbCustomerName = new JLabel("Customer name");
+		lbCustomerPhone = new JLabel("Customer mobile");
 		lbQuantity = new JLabel("Quantity");
 		lbMedicineList = new JLabel("Select Medicine");
-		styleLb(lbCustomerName,lbQuantity, lbMedicineList);
+		styleLb(lbCustomerName,lbQuantity, lbMedicineList, lbCustomerPhone);
 		
 		
 		// TextField
 		tfCustomerName = new JTextField(20);
+		tfCustomerPhone = new JTextField(20);
 		tfQuantity = new JTextField(20);
-		styleTf(tfCustomerName, tfQuantity);
+		styleTf(tfCustomerName, tfQuantity, tfCustomerPhone);
 		
 		//Medicine list comboBox
 		this.medicineList = new DatabaseOperations().getMedicineList(-1);
@@ -77,6 +79,7 @@ public class SellMedicine extends JPanel{
 		for(int i=0; i<medicineList.length; i++) {
 			medicineNames[i] = (String)this.medicineList[i][1];
 		}
+		// After checkout update the combo box with new medicine list.
 		
 		cbMedicineList = new JComboBox<>(this.medicineNames);
 		cbMedicineList.setFont(new Font("cambria", Font.PLAIN, 16));
@@ -98,12 +101,14 @@ public class SellMedicine extends JPanel{
 		
 		c.gridx = 0; c.gridy = 0; inputPanel.add(lbCustomerName, c);
 		c.gridx = 1; c.gridy = 0; inputPanel.add(tfCustomerName, c);
-		c.gridx = 0; c.gridy = 1; inputPanel.add(lbMedicineList, c);
-		c.gridx = 1; c.gridy = 1; inputPanel.add(comboLayout, c);
-		c.gridx = 0; c.gridy = 2; inputPanel.add(lbQuantity, c);
-		c.gridx = 1; c.gridy = 2; inputPanel.add(tfQuantity, c);
-		c.gridx = 0; c.gridy = 3; inputPanel.add(Box.createHorizontalBox());
+		c.gridx = 0; c.gridy = 1; inputPanel.add(lbCustomerPhone, c);
+		c.gridx = 1; c.gridy = 1; inputPanel.add(tfCustomerPhone, c);
+		c.gridx = 0; c.gridy = 2; inputPanel.add(lbMedicineList, c);
+		c.gridx = 1; c.gridy = 2; inputPanel.add(comboLayout, c);
+		c.gridx = 0; c.gridy = 3; inputPanel.add(lbQuantity, c);
+		c.gridx = 1; c.gridy = 3; inputPanel.add(tfQuantity, c);
 		c.gridx = 0; c.gridy = 4; inputPanel.add(Box.createHorizontalBox());
+		c.gridx = 0; c.gridy = 5; inputPanel.add(Box.createHorizontalBox());
 		
 		// Table of medicines
 		String columns[] = {"Medicine ID", "Name", "Quantity"};
@@ -196,7 +201,7 @@ public class SellMedicine extends JPanel{
 		// adding these two in the bottom of formPanel
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.add(btnCheckout);
-		
+		bottomPanel.add(btnClearAll);
 		formPanel.add(bottomPanel, BorderLayout.SOUTH);
 
 	}
@@ -253,8 +258,8 @@ public class SellMedicine extends JPanel{
 				return;
 			}
 		}
-		
-		if(map.containsKey(mid)) {
+		  
+		if (map.containsKey(mid)) {
 			JOptionPane.showMessageDialog(getRootPane(), "Medicine already added.");
 		}else {
 			map.put(mid,  availableQuantity);
@@ -285,6 +290,7 @@ public class SellMedicine extends JPanel{
 	private boolean validateForm() {
 		return Pattern.matches("[a-zA-Z\s]+", tfCustomerName.getText()) &&
 				Pattern.matches("[0-9]+", tfQuantity.getText()) &&
+				Pattern.matches("[0-9]+", tfCustomerPhone.getText()) &&
 				tfCustomerName.getText().length() >= 3;
 	}
 }
