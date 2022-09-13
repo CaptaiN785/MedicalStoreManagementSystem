@@ -3,6 +3,7 @@ package Database;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
 
 import jdk.jshell.StatementSnippet;
 
@@ -129,16 +130,6 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return false;
 	}
-/* daily report table descriptions
-+----------+---------+------+-----+---------+-------+
-| Field    | Type    | Null | Key | Default | Extra |
-+----------+---------+------+-----+---------+-------+
-| DATE     | date    | YES  |     | NULL    |       |
-| TIME     | time    | YES  |     | NULL    |       |
-| MID      | int(11) | YES  | MUL | NULL    |       |
-| QUANTITY | int(11) | YES  |     | NULL    |       |
-+----------+---------+------+-----+---------+-------+
- */
 	
 	public Object[][] getMedicineList(int sid){
 		
@@ -189,7 +180,6 @@ public class DatabaseOperations extends DatabaseConnection{
 		Object[][] obj = new Object[0][0];
 		return obj;
 	}
-	
 	public boolean saveMedicineList(String filePath) {
 		String sql = "(select 'MedicineID', 'Medicine name','Quantity', 'supplier name',"
 				+ " 'supplier phone', 'supplier email') UNION "
@@ -392,6 +382,7 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return new String[] {};
 	}
+	
 	public boolean isSupplierPresent(int sid) {
 		String sql = "SELECT * FROM " + SUPPLIER + " WHERE SID = " + sid;
 		try {
@@ -405,6 +396,64 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return false;
 	}
+	
+	public Object [] getMonthlyBuyingReport(String tableName){
+		
+		String sql = "SELECT M.MID, R.DATE, R.TIME, M.NAME, "
+				+ " R.QUANTITY FROM MEDICINES M, "
+				+ tableName
+				+ " R WHERE R.MID = M.MID";
+		
+		try {
+			Connection conn = getConnection(true);
+			DatabaseMetaData dbm = conn.getMetaData();
+			
+			ResultSet tables = dbm.getTables(null, null, tableName, null);
+			
+			if(!tables.next()) {
+				return new Object[] {3, "No Updation is done in this month."};
+			}
+			
+			Statement st = conn.createStatement();
+			ResultSet result = st.executeQuery(sql);
+			ArrayList<Object> data = new ArrayList<>();
+			while(result.next()) {
+				Object []temp = new Object[5];
+				temp[0] = result.getString("MID");
+				temp[1] = result.getString("DATE");
+				temp[2] = result.getString("TIME");
+				temp[3] = result.getString("NAME");
+				temp[4] = result.getString("QUANTITY");
+				data.add(temp);
+			}
+			if(data.size() == 0) {
+				return new Object[]{0, "No record found!"};
+			}else return new Object[] {1, data};
+		}catch(SQLException e) {
+			System.out.println("Error while fetching monthly report table, " + e.getMessage());
+		}
+		return new Object[] {2, "Database error."};
+	}
+	public boolean saveMonthlyBuyingDetails(String tableName, String filePath) {
+		String sql = "(select 'MedicineID', 'Date','Time', 'Name', "
+				+ " 'Quantity') UNION "
+				+ "(SELECT M.MID, R.DATE, R.TIME, M.NAME, "
+				+ " R.QUANTITY FROM MEDICINES M, "
+				+ tableName
+				+ " R WHERE R.MID = M.MID)"
+				+ " INTO OUTFILE '"+filePath+"' FIELDS ENCLOSED BY '\"' "
+				+ " terminated by ',' escaped by '\"' lines terminated by '\\r\\n'";
+//		System.out.println(sql);
+		try {
+			Statement st = getConnection(true).createStatement();
+			st.executeQuery(sql);
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Error while saving daily report table " + e.getMessage());
+		}
+		return false;
+	}
+	
 	public static void main(String[] args) {
 //		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
 		System.out.println("Everything is ok");
