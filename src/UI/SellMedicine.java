@@ -2,6 +2,8 @@ package UI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 import Database.DatabaseOperations;
@@ -25,12 +27,12 @@ import java.util.regex.Pattern;
 
 public class SellMedicine extends JPanel{
 	
-	JTextField tfCustomerName, tfQuantity,tfCustomerPhone;
+	JTextField tfCustomerName, tfQuantity,tfCustomerPhone, tfTotalCost;
 	JComboBox cbMedicineList;
 	
 	JPanel formPanel, headingPanel, inputPanel, bottomPanel;
 	JButton btnCheckout, btnAddMedicine, btnClearAll, btnHideMedicine;
-	JLabel lbHeading, lbCustomerName, lbCustomerPhone, lbQuantity, lbMedicineList;
+	JLabel lbHeading, lbCustomerName, lbCustomerPhone, lbQuantity, lbMedicineList, lbTotalCost;
 	Frame parentFrame;
 	
 	JTable jtTable;
@@ -41,11 +43,16 @@ public class SellMedicine extends JPanel{
 	HashMap<Integer, Integer> map;
 	
 	Box medicineLayout;
+	HashMap<Integer, Integer> medicineCost;
+	HashMap<Integer, Integer> maxMedicine;
 	
 	SellMedicine(Frame parentFrame){
 		map = new HashMap<>();
+		medicineCost = new HashMap<>();
 		// In hashmap, available quantity is storing
 		// it will also help in to map if present in table.
+		medicineCost = new DatabaseOperations().getMedicineCost();
+		maxMedicine = new HashMap<>();
 		
 		this.setLayout(new BorderLayout());
 		this.parentFrame = parentFrame;
@@ -64,23 +71,30 @@ public class SellMedicine extends JPanel{
 		lbCustomerPhone = new JLabel("Customer mobile");
 		lbQuantity = new JLabel("Quantity");
 		lbMedicineList = new JLabel("Select Medicine");
-		styleLb(lbCustomerName,lbQuantity, lbMedicineList, lbCustomerPhone);
+		lbTotalCost = new JLabel("Total cost");
+		styleLb(lbCustomerName,lbQuantity, lbMedicineList, lbCustomerPhone, lbTotalCost);
 		
 		
 		// TextField
 		tfCustomerName = new JTextField(20);
 		tfCustomerPhone = new JTextField(20);
 		tfQuantity = new JTextField(20);
-		styleTf(tfCustomerName, tfQuantity, tfCustomerPhone);
+		tfTotalCost = new JTextField(20);
+		tfTotalCost.setEditable(false);
+		styleTf(tfCustomerName, tfQuantity, tfCustomerPhone, tfTotalCost);
 		
 		//Medicine list comboBox
 		this.medicineList = new DatabaseOperations().getMedicineList(-1);
 		medicineNames = new String[this.medicineList.length];
 		for(int i=0; i<medicineList.length; i++) {
 			medicineNames[i] = (String)this.medicineList[i][1];
+			// columns 2 has available quantity
+			int mid = Integer.parseInt(medicineList[i][0].toString());
+			int availableQuantity = Integer.parseInt(medicineList[i][2].toString());
+			maxMedicine.put(mid, availableQuantity);
 		}
+
 		// After checkout update the combo box with new medicine list.
-		
 		cbMedicineList = new JComboBox<>(this.medicineNames);
 		cbMedicineList.setFont(new Font("cambria", Font.PLAIN, 16));
 		
@@ -107,18 +121,55 @@ public class SellMedicine extends JPanel{
 		c.gridx = 1; c.gridy = 2; inputPanel.add(comboLayout, c);
 		c.gridx = 0; c.gridy = 3; inputPanel.add(lbQuantity, c);
 		c.gridx = 1; c.gridy = 3; inputPanel.add(tfQuantity, c);
-		c.gridx = 0; c.gridy = 4; inputPanel.add(Box.createHorizontalBox());
+		c.gridx = 0; c.gridy = 4; inputPanel.add(lbTotalCost, c);
+		c.gridx = 1; c.gridy = 4; inputPanel.add(tfTotalCost, c);
 		c.gridx = 0; c.gridy = 5; inputPanel.add(Box.createHorizontalBox());
+		c.gridx = 0; c.gridy = 6; inputPanel.add(Box.createHorizontalBox());
 		
 		// Table of medicines
-		String columns[] = {"Medicine ID", "Name", "Quantity"};
+		String columns[] = {"Medicine ID", "Name", "Cost", "Quantity"};
 		tableModel = new DefaultTableModel(columns, 0) {
 			 public boolean isCellEditable(int row, int column) {
 			       //all cells false
-			       if(column == 2) return true;
+			       if(column == 3) return true;
 			       return false;
 			 }
 		};
+		// Adding table model listener for dynamic change in data
+		tableModel.addTableModelListener(new TableModelListener() {
+			public void tableChanged(TableModelEvent te) {
+				// Checking the maximum availability of medicine
+				int row = te.getFirstRow();
+				int col = te.getColumn();
+				
+				if(col == 3) { // value changed in quantity columns
+					String quant = jtTable.getValueAt(row, col).toString();
+					// checking if wrong value or character is inserted
+					if(!Pattern.matches("[0-9]+", quant)) {
+						JOptionPane.showMessageDialog(getRootPane(), "Unknown values.");
+						jtTable.setValueAt(0, row, col);
+						return;
+					}
+					
+					int mid = Integer.parseInt(jtTable.getValueAt(row, 0).toString());
+					int quantity = Integer.parseInt(quant);
+					if(!checkAvailablity(maxMedicine.get(mid), quantity)) {
+						JOptionPane.showMessageDialog(getRootPane(), "Not enough medicine! Available is "+ maxMedicine.get(mid));
+						jtTable.setValueAt(Math.min(quantity, maxMedicine.get(mid)), row, col);
+						return;
+					}
+				}
+				// calculate the total cost here and update the total cost
+				int totalCost = 0;
+				int totalRow = jtTable.getRowCount();
+				for(int i=0; i<totalRow; i++) {
+					int mid = Integer.parseInt(jtTable.getValueAt(i, 0).toString());
+					int quantity = Integer.parseInt(jtTable.getValueAt(i, 3).toString());
+					totalCost += medicineCost.get(mid) * quantity;
+				}
+				tfTotalCost.setText(String.valueOf(totalCost));
+			}
+		});
 		
 		jtTable = new JTable(tableModel);
 		jtTable.getTableHeader().setReorderingAllowed(false);
@@ -192,8 +243,24 @@ public class SellMedicine extends JPanel{
 			public void actionPerformed(ActionEvent ae) {
 				int res = JOptionPane.showConfirmDialog(getRootPane(), "Are you sure?");
 				if(res == JOptionPane.YES_OPTION) {
-					JOptionPane.showMessageDialog(getRootPane(), "Medicine is checked out.");
-					clearTable();
+					// | PHONE   | NAME   | MID  | QUANTITY | COST | DATETIME 
+					int totalRow = jtTable.getRowCount();
+					if(validateForm() && totalRow > 0) {
+						String name = tfCustomerName.getText();
+						long phone = Long.parseLong(tfCustomerPhone.getText());
+						for(int i=0; i<totalRow; i++) {
+							int mid = Integer.parseInt(jtTable.getValueAt(i, 0).toString());
+							int cost = Integer.parseInt(jtTable.getValueAt(i, 2).toString()); 
+							int quantity = Integer.parseInt(jtTable.getValueAt(i, 3).toString());
+							if(!new DatabaseOperations().addCheckoutDetails(phone, name, mid, quantity, cost)) {
+								JOptionPane.showMessageDialog(getRootPane(), "Fatal error occured for mid: " + mid);
+							}
+						}
+						JOptionPane.showMessageDialog(getRootPane(), "Medicine checked out successfully");
+						clearTable();
+					}else {
+						JOptionPane.showMessageDialog(getRootPane(), "Invalid credential!");
+					}
 				}
 			}
 		});
@@ -218,7 +285,7 @@ public class SellMedicine extends JPanel{
 		JLabel headingLabel = new JLabel("Medicine information");
 		headingLabel.setFont(new Font("cambria", Font.PLAIN, 25));
 		medicineLayout.add(new JPanel().add(headingLabel));
-		medicineLayout.add(new SearchMedicine(parentFrame, false, Integer.parseInt((String)jtTable.getValueAt(row, col))));
+		medicineLayout.add(new SearchMedicine(parentFrame, false, Integer.parseInt(jtTable.getValueAt(row, col).toString())));
 		
 		btnHideMedicine = new JButton("Hide");
 		btnHideMedicine.setFont(new Font("cambria", Font.PLAIN, 16));
@@ -245,25 +312,29 @@ public class SellMedicine extends JPanel{
 	private void addMedicineToTable() {
 		int ind = cbMedicineList.getSelectedIndex();
 		Object[] obj = medicineList[ind];
-		int availableQuantity = Integer.parseInt((String)obj[2]);
-		int mid = Integer.parseInt((String)obj[0]);
 		
-		obj[2] = 0;
+		int availableQuantity = Integer.parseInt(obj[2].toString());
+		int mid = Integer.parseInt(obj[0].toString());
+		
+		Object []newObject = new Object[4];
+		newObject[0] = mid;
+		newObject[1] = obj[1];
+		newObject[2] = medicineCost.get(mid);
+		newObject[3] = 0;
 		if(Pattern.matches("[0-9]+", (CharSequence)tfQuantity.getText()) && tfQuantity.getText() != ""){
 			int quant = Integer.parseInt(tfQuantity.getText());
 			if(checkAvailablity(availableQuantity, quant)) {
-				obj[2] = quant;
+				newObject[3] = quant;
 			}else {
 				JOptionPane.showMessageDialog(getRootPane(), "Not enough in inventory!");
 				return;
 			}
 		}
-		  
 		if (map.containsKey(mid)) {
 			JOptionPane.showMessageDialog(getRootPane(), "Medicine already added.");
 		}else {
 			map.put(mid,  availableQuantity);
-			tableModel.addRow(obj);
+			tableModel.addRow(newObject);
 		}
 	}
 	boolean checkAvailablity(int available, int quantity) {
@@ -271,10 +342,12 @@ public class SellMedicine extends JPanel{
 	}
 	private void clearTable() {
 		for(int i=tableModel.getRowCount() -1; i>=0; i--) {
-			int mid = Integer.parseInt((String)jtTable.getValueAt(i, 0));
+			int mid = Integer.parseInt(jtTable.getValueAt(i, 0).toString());
 			map.remove(mid);
 			tableModel.removeRow(i);
 		}
+		tfCustomerName.setText("");
+		tfCustomerPhone.setText("");
 		JOptionPane.showMessageDialog(getRootPane(), "All value is cleared");
 	}
 	private void styleTf(JTextField ...tfs) {
@@ -289,8 +362,8 @@ public class SellMedicine extends JPanel{
 	}
 	private boolean validateForm() {
 		return Pattern.matches("[a-zA-Z\s]+", tfCustomerName.getText()) &&
-				Pattern.matches("[0-9]+", tfQuantity.getText()) &&
 				Pattern.matches("[0-9]+", tfCustomerPhone.getText()) &&
+				tfCustomerPhone.getText().length() == 10 &&
 				tfCustomerName.getText().length() >= 3;
 	}
 }

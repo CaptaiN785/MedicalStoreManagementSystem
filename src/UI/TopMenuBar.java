@@ -3,10 +3,13 @@ package UI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class TopMenuBar extends JMenuBar {
 	
@@ -14,7 +17,7 @@ public class TopMenuBar extends JMenuBar {
 	JMenuItem addMedicine, medicineList, updateInventory, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
 	
-	JMenuItem checkoutMedicine, monthlyBuyingReport, monthlySoldReport;
+	JMenuItem checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail, logout;
 	
 	public TopMenuBar(Frame parentFrame) {
 		// Working with medicine Menu
@@ -28,7 +31,6 @@ public class TopMenuBar extends JMenuBar {
 				addAnotherPanel(parentFrame, new AddMedicine(parentFrame));
 			}
 		});
-		
 		medicineList = new JMenuItem("Medicine list");
 		medicineList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -43,7 +45,6 @@ public class TopMenuBar extends JMenuBar {
 		});
 		
 		updateInventory = new JMenuItem("Update Inventory");
-		updateInventory.setForeground(Color.RED);
 		updateInventory.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				addAnotherPanel(parentFrame, new UpdateInventory(parentFrame));
@@ -117,8 +118,46 @@ public class TopMenuBar extends JMenuBar {
 			}
 		});
 		
+		monthlySoldReport = new JMenuItem("Monthly sold report");
+		service.add(monthlySoldReport);
+		monthlySoldReport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new MonthlySoldReport(parentFrame));
+			}
+		});
 		
-		// Final addition of menu to the menubar
+		retailerDetail = new JMenuItem("Retailer details");
+		service.add(retailerDetail);
+		retailerDetail.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new RetailerDetails(parentFrame));
+			}
+		});
+		
+		
+		logout = new JMenuItem("Logout");
+		service.addSeparator();
+		service.add(logout);
+		logout.setForeground(Color.red);
+		logout.setFont(new Font("cambria", Font.HANGING_BASELINE, 16));
+		logout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				int res = JOptionPane.showConfirmDialog(getRootPane(), "Do you want to logout?");
+				if(res == JOptionPane.YES_OPTION) {
+					parentFrame.logout();
+				}
+			}
+		});
+		
+		// styling the all menu items
+		styleMenuItems(addMedicine, medicineList, updateInventory, searchMedicine,
+	addSupplier, searchSupplier,
+	checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail,logout);
+		
+		// Styling the Menu
+		styleMenu(medicine, supplier, service);
+		
+		// Final addition of menu to the menu bar
 		this.add(medicine);
 		this.add(supplier);
 		this.add(service);
@@ -128,5 +167,17 @@ public class TopMenuBar extends JMenuBar {
 		frame.currentPanel = panel;
 		frame.add(frame.currentPanel, BorderLayout.CENTER);
 		frame.refreshDisplay();
+	}
+	private void styleMenuItems(JMenuItem ...items) {
+		for(JMenuItem item: items) {
+			item.setFont(new Font("cambria", Font.PLAIN, 16));
+			item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		}
+	}
+	private void styleMenu(JMenu ...items) {
+		for(JMenu item: items) {
+			item.setFont(new Font("cambria", Font.PLAIN, 16));
+			item.setBorder(new EmptyBorder(new Insets(0, 10, 0, 10)));
+		}
 	}
 }

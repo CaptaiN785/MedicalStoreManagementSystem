@@ -3,6 +3,7 @@ package Database;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Vector;
 
 import jdk.jshell.StatementSnippet;
@@ -453,9 +454,163 @@ public class DatabaseOperations extends DatabaseConnection{
 		}
 		return false;
 	}
+	public HashMap<Integer, Integer> getMedicineCost(){
+		HashMap<Integer, Integer> map = new HashMap<>();
+		
+		try {
+			Statement st = getConnection(true).createStatement();
+			String sql = "SELECT MID, COST FROM " + MEDICINES;
+			ResultSet result = st.executeQuery(sql);
+			while(result.next()) {
+				map.put(result.getInt("MID"), result.getInt("COST"));
+			}
+		}catch(SQLException e) {
+			System.out.println("Error while fetching medicine cost. " + e.getMessage());
+		}
+		return map;
+	}
 	
+	public boolean addCheckoutDetails(long phone, String name, int mid, int quantity, int cost) {
+		/*
+		+----------+-------------+------+-----+---------+-------+
+		| Field    | Type        | Null | Key | Default | Extra |
+		+----------+-------------+------+-----+---------+-------+
+		| PHONE    | bigint(20)  | YES  |     | NULL    |       |
+		| NAME     | varchar(30) | YES  |     | NULL    |       |
+		| MID      | int(11)     | YES  | MUL | NULL    |       |
+		| QUANTITY | int(11)     | YES  |     | NULL    |       |
+		| COST     | int(11)     | YES  |     | NULL    |       |
+		| DATETIME | datetime    | YES  |     | NULL    |       |
+		+----------+-------------+------+-----+---------+-------+
+		*/
+		String sql = "INSERT INTO " + CHECKOUT + " VALUES ("
+				+ "" + phone +", "
+				+ "'" + name +"', "
+				+ "" + mid +", "
+				+ "" + quantity +", "
+				+ "" + cost +", "
+				+ " now() "
+				+ ")";
+		
+		try {
+			Statement st = getConnection(true).createStatement();
+			st.executeUpdate(sql);
+			// it will reduce the no of availability of medicines.
+			sql = "UPDATE " + MEDICINES + " SET QUANTITY = QUANTITY - " + quantity + " WHERE MID = " + mid;
+			st.executeUpdate(sql);
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Error while adding checkout details. " + e.getMessage());
+		}
+		return false;
+	}
+	
+	public ArrayList<String[]> getMonthlySoldReport(int month, int year){
+		ArrayList<String []> data = new ArrayList<>();
+		
+		String sql = "select c.phone, m.mid, m.name, c.quantity,"
+				+ " c.cost, c.datetime from checkout c,"
+				+ " medicines m where month(datetime) = " + month + " "
+				+ " and year(datetime) = "+ year +" and c.mid = m.mid";
+		try {
+			
+			Statement st = getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			while(result.next()) {
+				String res[] = {
+						result.getString("PHONE"),
+						result.getString("MID"),
+						result.getString("NAME"),
+						result.getString("QUANTITY"),
+						result.getString("COST"),
+						result.getString("DATETIME")
+						};
+				data.add(res);
+			}
+		}catch(SQLException e) {
+			System.out.println("Error while fetching sold report");
+		}
+		return data;
+	}
+	public boolean saveMonthlySoldReport(int month, int year, String filePath) {
+		String sql = "(select 'Phone', 'Medicine Id', 'Name', 'Quantity', 'Cost', 'Datetime')"
+				+ " UNION (select c.phone, m.mid, m.name, c.quantity,"
+				+ " c.cost, c.datetime from checkout c,"
+				+ " medicines m where month(datetime) = " + month + " "
+				+ " and year(datetime) = "+ year +" and c.mid = m.mid) "
+				+ " INTO OUTFILE '"+filePath+"' FIELDS ENCLOSED BY '\"' "
+				+ " terminated by ',' escaped by '\"' lines terminated by '\\r\\n'";
+		
+		try {
+			Statement st = getConnection(true).createStatement();
+			st.executeQuery(sql);
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Error while saving montly sold report " + e.getMessage());
+		}
+		return false;
+	}
+	
+	// Ratailer details
+	public ArrayList<String[]> getRetailerDetails(long phone){
+		ArrayList<String []> data = new ArrayList<>();
+		
+		String sql = "select c.phone, m.mid, m.name, c.quantity,"
+				+ " c.cost, c.datetime from checkout c,"
+				+ " medicines m where m.mid = c.mid and  c.phone = " + phone;
+		try {
+			Statement st = getConnection(true).createStatement();
+			ResultSet result = st.executeQuery(sql);
+			while(result.next()) {
+				String res[] = {
+						result.getString("PHONE"),
+						result.getString("MID"),
+						result.getString("NAME"),
+						result.getString("QUANTITY"),
+						result.getString("COST"),
+						result.getString("DATETIME")
+						};
+				data.add(res);
+			}
+		}catch(SQLException e) {
+			System.out.println("Error while fetching sold report");
+		}
+		return data;
+	}
+	public boolean saveRetailerDetail(String filePath, long phone) {
+		String sql = "(select 'Phone', 'Medicine Id', 'Name', 'Quantity', 'Cost', 'Datetime')"
+				+ " UNION (select c.phone, m.mid, m.name, c.quantity,"
+				+ " c.cost, c.datetime from checkout c,"
+				+ " medicines m where m.mid = c.mid and c.phone = " + phone + ")"
+				+ " INTO OUTFILE '"+filePath+"' FIELDS ENCLOSED BY '\"' "
+				+ " terminated by ',' escaped by '\"' lines terminated by '\\r\\n'";
+		
+		System.out.println(sql);
+		try {
+			Statement st = getConnection(true).createStatement();
+			st.executeQuery(sql);
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Error while saving retailer details. " + e.getMessage());
+		}
+		return false;
+	}
 	public static void main(String[] args) {
-//		new DatabaseOperations().saveMedicineList("D:/newXFile.csv");
+//		new DatabaseOperations().saveMonthlySoldReport(9, 2022, "D:\nw.csv");
+//		HashMap<Integer, Integer> map = new DatabaseOperations().getMedicineCost();
+//		Set<Integer> set = map.keySet();
+//		for(int x: set) {
+//			System.out.println(x + " => " + map.get(x));
+//		}
+//		System.out.println(new DatabaseOperations().addCheckoutDetails(9999999999l, "Mukesh", 6, 12, 30));
+	
+//		ArrayList<String[] > res = new DatabaseOperations().getMonthlySoldReport(9, 2022);
+//		for(String[] r : res) {
+//			for(String s : r) {
+//				System.out.print(s + " ");
+//			}
+//			System.out.println();
+//		}
 		System.out.println("Everything is ok");
 	}
 }

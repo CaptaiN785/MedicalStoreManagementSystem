@@ -1,1 +1,1 @@
-# MedicalStoreManagementSystem
+# Medical Store Management System

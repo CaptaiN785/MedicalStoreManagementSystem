@@ -19,12 +19,13 @@ public class DatabaseInitialization extends DatabaseConnection{
 			System.out.println("Database is not created.");
 		}
 	}
-	protected boolean InitializeTables() {
+	public boolean InitializeTables() {
 		boolean supplier = createSupplierTable();
 		boolean medicine = createMedicineTable();
 		boolean report = createDailyReportTable();
+		boolean history = createHistoryTable();
 		
-		return supplier && medicine && report;		
+		return supplier && medicine && report && history;		
 	}
 
 	private boolean createDatabase() {
@@ -127,8 +128,32 @@ public class DatabaseInitialization extends DatabaseConnection{
 		String name = "DailyReport_" + month + "_"+ year;
 		return name;
 	}
+	private boolean createHistoryTable() {	
+		try {
+			Statement st = getConnection(true).createStatement();
+			String sql = "CREATE TABLE IF NOT EXISTS " + CHECKOUT + "("
+					+ "PHONE BIGINT, "
+					+ "NAME VARCHAR(30), "
+					+ "MID INT, "
+					+ "QUANTITY INT,"
+					+ "COST INT,"
+					+ "DATETIME DATETIME, "
+					+ "CONSTRAINT `checkout_table_with_medicine` "
+					+ "FOREIGN KEY (MID) REFERENCES " + MEDICINES + "(MID) "
+					+ "ON DELETE RESTRICT "
+					+ "ON UPDATE CASCADE "
+					+ ")";
+			
+			st.executeUpdate(sql);
+			System.out.println(CHECKOUT + " table is created.");
+			return true;
+		}catch(SQLException e) {
+			System.out.println("Error while creating history table. " + e.getMessage());
+		}
+		return false;
+	}
 	
 	public static void main(String[] args) {
-		new DatabaseInitialization();
+		new DatabaseInitialization().InitializeTables();
 	}
 }

@@ -11,18 +11,17 @@ public class  DatabaseConnection{
 	protected static final String DB = "MEDICAL";
 	protected static String SUPPLIER = "SUPPLIER";
 	protected static String MEDICINES = "MEDICINES";
+	protected static String CHECKOUT = "CHECKOUT";
 	
 	// Private variable 
 	private Connection conn = null;
 	private static final String USER = "root";
 	private static final String PASSWORD = "";
-	private static boolean isDriverLoaded = false;
 	
 	protected DatabaseConnection(){
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			System.out.println("Driver loaded successfully");	
-			isDriverLoaded = true;
+			System.out.println("Driver loaded successfully");
 		} catch (ClassNotFoundException ex) {
 			System.out.println("Driver not found " + ex.getMessage());
 		}
