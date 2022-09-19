@@ -19,7 +19,6 @@ import javax.swing.border.LineBorder;
 
 import Database.DatabaseOperations;
 
-
 public class AddMedicine extends JPanel implements ActionListener{
 	
 	JLabel heading;

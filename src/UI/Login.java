@@ -82,5 +82,4 @@ public class Login extends JPanel{
 		loginPanel.add(formPanel, BorderLayout.CENTER);
 		this.add(loginPanel, BorderLayout.CENTER);
 	}
-	
 }

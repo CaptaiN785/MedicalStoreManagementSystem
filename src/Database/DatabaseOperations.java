@@ -596,21 +596,6 @@ public class DatabaseOperations extends DatabaseConnection{
 		return false;
 	}
 	public static void main(String[] args) {
-//		new DatabaseOperations().saveMonthlySoldReport(9, 2022, "D:\nw.csv");
-//		HashMap<Integer, Integer> map = new DatabaseOperations().getMedicineCost();
-//		Set<Integer> set = map.keySet();
-//		for(int x: set) {
-//			System.out.println(x + " => " + map.get(x));
-//		}
-//		System.out.println(new DatabaseOperations().addCheckoutDetails(9999999999l, "Mukesh", 6, 12, 30));
-	
-//		ArrayList<String[] > res = new DatabaseOperations().getMonthlySoldReport(9, 2022);
-//		for(String[] r : res) {
-//			for(String s : r) {
-//				System.out.print(s + " ");
-//			}
-//			System.out.println();
-//		}
 		System.out.println("Everything is ok");
 	}
 }

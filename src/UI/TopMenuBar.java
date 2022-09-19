@@ -71,33 +71,16 @@ public class TopMenuBar extends JMenuBar {
 			}
 		});
 		
-//		updateSupplier = new JMenuItem("Update supplier");
-//		updateSupplier.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				addAnotherPanel(parentFrame, new UpdateSupplier(parentFrame));
-//			}
-//		});
-//		
 		searchSupplier = new JMenuItem("View supplier");
 		searchSupplier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				addAnotherPanel(parentFrame, new SearchSupplier(parentFrame, true, 0));
 			}
 		});
-//		deleteSupplier = new JMenuItem("Delete Supplier");
-//		deleteSupplier.setForeground(Color.RED);
-//		deleteSupplier.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				addAnotherPanel(parentFrame, new DeleteSupplier(parentFrame));
-//			}
-//		});
 		
 		supplier.add(addSupplier);
-//		supplier.add(updateSupplier);
 		supplier.addSeparator();
-		supplier.add(searchSupplier);
-//		supplier.add(deleteSupplier);
-		
+		supplier.add(searchSupplier);		
 		
 		// goto menu
 		_goto = new JMenu("Goto");
