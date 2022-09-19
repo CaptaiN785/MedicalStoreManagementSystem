@@ -13,11 +13,12 @@ import javax.swing.border.EmptyBorder;
 
 public class TopMenuBar extends JMenuBar {
 	
-	JMenu medicine, supplier, report, service;
+	JMenu medicine, supplier, report, _goto , service;
 	JMenuItem addMedicine, medicineList, updateInventory, searchMedicine;
 	JMenuItem addSupplier, updateSupplier, deleteSupplier, searchSupplier;
 	
-	JMenuItem checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail, logout;
+	JMenuItem checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail;
+	JMenuItem logout, dashboard;
 	
 	public TopMenuBar(Frame parentFrame) {
 		// Working with medicine Menu
@@ -98,6 +99,37 @@ public class TopMenuBar extends JMenuBar {
 //		supplier.add(deleteSupplier);
 		
 		
+		// goto menu
+		_goto = new JMenu("Goto");
+		_goto.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		
+		
+		// dashboard menu items
+		dashboard = new JMenuItem("Dashboard");
+		_goto.add(dashboard);
+		dashboard.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				addAnotherPanel(parentFrame, new Dashboard(parentFrame));
+			}
+		});
+		
+		// Logout menuitem
+		logout = new JMenuItem("Logout");
+		_goto.addSeparator();
+		_goto.add(logout);
+		logout.setForeground(Color.red);
+		logout.setFont(new Font("cambria", Font.HANGING_BASELINE, 16));
+		logout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		logout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				int res = JOptionPane.showConfirmDialog(getRootPane(), "Do you want to logout?");
+				if(res == JOptionPane.YES_OPTION) {
+					parentFrame.logout();
+				}
+			}
+		});
+		
+		
 		// Service menu Items
 		service = new JMenu("Services");
 		service.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -135,31 +167,18 @@ public class TopMenuBar extends JMenuBar {
 		});
 		
 		
-		logout = new JMenuItem("Logout");
-		service.addSeparator();
-		service.add(logout);
-		logout.setForeground(Color.red);
-		logout.setFont(new Font("cambria", Font.HANGING_BASELINE, 16));
-		logout.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				int res = JOptionPane.showConfirmDialog(getRootPane(), "Do you want to logout?");
-				if(res == JOptionPane.YES_OPTION) {
-					parentFrame.logout();
-				}
-			}
-		});
-		
 		// styling the all menu items
 		styleMenuItems(addMedicine, medicineList, updateInventory, searchMedicine,
 	addSupplier, searchSupplier,
-	checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail,logout);
+	checkoutMedicine, monthlyBuyingReport, monthlySoldReport, retailerDetail, dashboard);
 		
 		// Styling the Menu
-		styleMenu(medicine, supplier, service);
+		styleMenu(medicine, supplier, service, _goto);
 		
 		// Final addition of menu to the menu bar
 		this.add(medicine);
 		this.add(supplier);
+		this.add(_goto);
 		this.add(service);
 	}
 	public void addAnotherPanel(Frame frame, JPanel panel) {

@@ -43,6 +43,9 @@ public class Frame extends JFrame{
 	}
 	protected void login() {
 		this.remove(currentPanel);
+		Dashboard dash = new Dashboard(this);
+		this.add(dash, BorderLayout.CENTER);
+		this.currentPanel = dash;
 		menuBar.setVisible(true);
 		refreshDisplay();
 	}
